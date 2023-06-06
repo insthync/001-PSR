@@ -10,7 +10,6 @@
 
 ![](screenshots/2.png)
 
-- Unity `.gitignore`
 - Unity Menu -> `Window` -> `Package Manager`
 
 ![](screenshots/3.png)
@@ -25,7 +24,7 @@
 
 ![](screenshots/6.png)
 
-# State and room
+# Schema and room
 
 ![](screenshots/7.png)
 
