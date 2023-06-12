@@ -9,6 +9,8 @@ namespace PSR
     {
         public FlashMessage SuccessMessage;
         public FlashMessage ErrorMessage;
+        public GameObject[] NotJoinedObjects = new GameObject[0];
+        public GameObject[] JoinedObjects = new GameObject[0];
 
         ColyseusClient _client;
         ColyseusRoom<MyRoomState> _room;
@@ -16,6 +18,19 @@ namespace PSR
         void Start()
         {
             CreateClient();
+            UpdateJoinedObjects();
+        }
+
+        public void UpdateJoinedObjects()
+        {
+            foreach (var obj in NotJoinedObjects)
+            {
+                obj.SetActive(_room == null);
+            }
+            foreach (var obj in JoinedObjects)
+            {
+                obj.SetActive(_room != null);
+            }
         }
 
         public void CreateClient()
@@ -38,6 +53,7 @@ namespace PSR
             ClearRoomEvents();
             _room = null;
             ErrorMessage.Show($"Leave From The Room: {code}");
+            UpdateJoinedObjects();
         }
 
         public bool ShowAlreadyJoinedMessage()
@@ -66,6 +82,7 @@ namespace PSR
                 return;
             }
             SetupRoomEvents();
+            UpdateJoinedObjects();
             SuccessMessage.Show($"Joined: {_room.RoomId}");
             Debug.Log($"[GameInstance] Joined: {_room.RoomId}");
         }
@@ -86,6 +103,7 @@ namespace PSR
                 return;
             }
             SetupRoomEvents();
+            UpdateJoinedObjects();
             SuccessMessage.Show($"Joined: {_room.RoomId}");
             Debug.Log($"[GameInstance] Joined: {_room.RoomId}");
         }
@@ -106,6 +124,7 @@ namespace PSR
                 return;
             }
             SetupRoomEvents();
+            UpdateJoinedObjects();
             SuccessMessage.Show($"Joined: {_room.RoomId}");
             Debug.Log($"[GameInstance] Joined: {_room.RoomId}");
         }
