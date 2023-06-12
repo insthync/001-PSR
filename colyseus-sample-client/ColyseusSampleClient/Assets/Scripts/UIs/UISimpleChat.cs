@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SimpleMessageSending : MonoBehaviour
+public class UISimpleChat : MonoBehaviour
 {
     public TMPro.TMP_InputField InputFieldMessage;
 
