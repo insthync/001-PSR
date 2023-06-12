@@ -3,150 +3,186 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace PSR
+public class GameInstance : MonoBehaviour
 {
-    public class GameInstance : MonoBehaviour
+    public FlashMessage SuccessMessage;
+    public FlashMessage ErrorMessage;
+    public FlashMessage[] StackableMessages = new FlashMessage[0];
+    public GameObject[] NotJoinedObjects = new GameObject[0];
+    public GameObject[] JoinedObjects = new GameObject[0];
+
+    public ColyseusClient Client { get; private set; }
+    public ColyseusRoom<MyRoomState> Room { get; private set; }
+
+    public static GameInstance Instance { get; private set; }
+
+    private int _showingStackableMessageIndex = 0;
+
+    private void Awake()
     {
-        public FlashMessage SuccessMessage;
-        public FlashMessage ErrorMessage;
-        public GameObject[] NotJoinedObjects = new GameObject[0];
-        public GameObject[] JoinedObjects = new GameObject[0];
-
-        ColyseusClient _client;
-        ColyseusRoom<MyRoomState> _room;
-
-        void Start()
+        if (Instance != null)
         {
-            CreateClient();
-            UpdateJoinedObjects();
+            Destroy(gameObject);
+            return;
         }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
 
-        public void UpdateJoinedObjects()
-        {
-            foreach (var obj in NotJoinedObjects)
-            {
-                obj.SetActive(_room == null);
-            }
-            foreach (var obj in JoinedObjects)
-            {
-                obj.SetActive(_room != null);
-            }
-        }
+    void Start()
+    {
+        CreateClient();
+        UpdateJoinedObjects();
+    }
 
-        public void CreateClient()
+    public void UpdateJoinedObjects()
+    {
+        foreach (var obj in NotJoinedObjects)
         {
-            _client = new ColyseusClient("ws://localhost:2567");
+            obj.SetActive(Room == null);
         }
+        foreach (var obj in JoinedObjects)
+        {
+            obj.SetActive(Room != null);
+        }
+    }
 
-        private void SetupRoomEvents()
-        {
-            _room.OnLeave += _room_OnLeave;
-        }
+    public void CreateClient()
+    {
+        Client = new ColyseusClient("ws://localhost:2567");
+    }
 
-        private void ClearRoomEvents()
-        {
-            _room.OnLeave -= _room_OnLeave;
-        }
+    private void SetupRoomEvents()
+    {
+        Room.OnLeave += _room_OnLeave;
+        Room.OnMessage<SimpleChat>("simple-chat", OnReceiveSimpleChat);
+    }
 
-        private void _room_OnLeave(int code)
-        {
-            ClearRoomEvents();
-            _room = null;
-            ErrorMessage.Show($"Leave From The Room: {code}");
-            UpdateJoinedObjects();
-        }
+    private void ClearRoomEvents()
+    {
+        Room.OnLeave -= _room_OnLeave;
+    }
 
-        public bool ShowAlreadyJoinedMessage()
-        {
-            if (_room != null)
-            {
-                ErrorMessage.Show($"Already Joined: {_room.RoomId}");
-                return true;
-            }
-            return false;
-        }
+    private void _room_OnLeave(int code)
+    {
+        ClearRoomEvents();
+        Room = null;
+        ErrorMessage.Show($"Leave From The Room: {code}");
+        UpdateJoinedObjects();
+    }
 
-        public async void JoinOrCreateRoom()
+    public bool ShowAlreadyJoinedMessage()
+    {
+        if (Room != null)
         {
-            if (ShowAlreadyJoinedMessage())
-                return;
-            try
-            {
-                _room = await _client.JoinOrCreate<MyRoomState>("my_room");
-            }
-            catch (System.Exception ex)
-            {
-                ErrorMessage.Show(ex.Message);
-                Debug.LogError($"[GameInstance->JoinOrCreateRoom] Cannot Join: {ex.Message}");
-                Debug.LogException(ex);
-                return;
-            }
-            SetupRoomEvents();
-            UpdateJoinedObjects();
-            SuccessMessage.Show($"Joined: {_room.RoomId}");
-            Debug.Log($"[GameInstance] Joined: {_room.RoomId}");
+            ErrorMessage.Show($"Already Joined: {Room.RoomId}");
+            return true;
         }
+        return false;
+    }
 
-        public async void JoinRoom()
+    public async void JoinOrCreateRoom()
+    {
+        if (ShowAlreadyJoinedMessage())
+            return;
+        try
         {
-            if (ShowAlreadyJoinedMessage())
-                return;
-            try
-            {
-                _room = await _client.Join<MyRoomState>("my_room");
-            }
-            catch (System.Exception ex)
-            {
-                ErrorMessage.Show(ex.Message);
-                Debug.LogError($"[GameInstance->JoinRoom] Cannot Join: {ex.Message}");
-                Debug.LogException(ex);
-                return;
-            }
-            SetupRoomEvents();
-            UpdateJoinedObjects();
-            SuccessMessage.Show($"Joined: {_room.RoomId}");
-            Debug.Log($"[GameInstance] Joined: {_room.RoomId}");
+            Room = await Client.JoinOrCreate<MyRoomState>("my_room");
         }
+        catch (System.Exception ex)
+        {
+            ErrorMessage.Show(ex.Message);
+            Debug.LogError($"[GameInstance->JoinOrCreateRoom] Cannot Join: {ex.Message}");
+            return;
+        }
+        SetupRoomEvents();
+        UpdateJoinedObjects();
+        SuccessMessage.Show($"Joined: {Room.RoomId}");
+        Debug.Log($"[GameInstance] Joined: {Room.RoomId}");
+    }
 
-        public async void CreateRoom()
+    public async void JoinRoom()
+    {
+        if (ShowAlreadyJoinedMessage())
+            return;
+        try
         {
-            if (ShowAlreadyJoinedMessage())
-                return;
-            try
-            {
-                _room = await _client.Create<MyRoomState>("my_room");
-            }
-            catch (System.Exception ex)
-            {
-                ErrorMessage.Show(ex.Message);
-                Debug.LogError($"[GameInstance->CreateRoom] Cannot Join: {ex.Message}");
-                Debug.LogException(ex);
-                return;
-            }
-            SetupRoomEvents();
-            UpdateJoinedObjects();
-            SuccessMessage.Show($"Joined: {_room.RoomId}");
-            Debug.Log($"[GameInstance] Joined: {_room.RoomId}");
+            Room = await Client.Join<MyRoomState>("my_room");
         }
+        catch (System.Exception ex)
+        {
+            ErrorMessage.Show(ex.Message);
+            Debug.LogError($"[GameInstance->JoinRoom] Cannot Join: {ex.Message}");
+            return;
+        }
+        SetupRoomEvents();
+        UpdateJoinedObjects();
+        SuccessMessage.Show($"Joined: {Room.RoomId}");
+        Debug.Log($"[GameInstance] Joined: {Room.RoomId}");
+    }
 
-        public async void LeaveRoom()
+    public async void CreateRoom()
+    {
+        if (ShowAlreadyJoinedMessage())
+            return;
+        try
         {
-            if (_room == null)
-            {
-                ErrorMessage.Show($"Not Joined A Room Yet");
-                return;
-            }
-            try
-            {
-                await _room.Leave();
-            }
-            catch (System.Exception ex)
-            {
-                ErrorMessage.Show(ex.Message);
-                Debug.LogError($"[GameInstance->LeaveRoom] Cannot Leave: {ex.Message}");
-                Debug.LogException(ex);
-                return;
-            }
+            Room = await Client.Create<MyRoomState>("my_room");
         }
+        catch (System.Exception ex)
+        {
+            ErrorMessage.Show(ex.Message);
+            Debug.LogError($"[GameInstance->CreateRoom] Cannot Join: {ex.Message}");
+            return;
+        }
+        SetupRoomEvents();
+        UpdateJoinedObjects();
+        SuccessMessage.Show($"Joined: {Room.RoomId}");
+        Debug.Log($"[GameInstance] Joined: {Room.RoomId}");
+    }
+
+    public async void LeaveRoom()
+    {
+        if (Room == null)
+        {
+            ErrorMessage.Show($"Not Joined A Room Yet");
+            return;
+        }
+        try
+        {
+            await Room.Leave();
+        }
+        catch (System.Exception ex)
+        {
+            ErrorMessage.Show(ex.Message);
+            Debug.LogError($"[GameInstance->LeaveRoom] Cannot Leave: {ex.Message}");
+            return;
+        }
+    }
+
+    public async void SendSimpleChat(string message)
+    {
+        if (Room == null)
+        {
+            ErrorMessage.Show($"Not Joined A Room Yet");
+            return;
+        }
+        try
+        {
+            await Room.Send("simple-chat", message);
+        }
+        catch (System.Exception ex)
+        {
+            ErrorMessage.Show(ex.Message);
+            Debug.LogError($"[GameInstance->SendMessageToServer] Cannot Send: {ex.Message}");
+            return;
+        }
+    }
+
+    private void OnReceiveSimpleChat(SimpleChat msg)
+    {
+        StackableMessages[_showingStackableMessageIndex++].Show($"{msg.sessionId}: {msg.message}");
+        if (_showingStackableMessageIndex >= StackableMessages.Length)
+            _showingStackableMessageIndex = 0;
     }
 }

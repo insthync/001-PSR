@@ -7,10 +7,11 @@ export class MyRoom extends Room<MyRoomState> {
   onCreate (options: any) {
     this.setState(new MyRoomState());
 
-    this.onMessage("type", (client, message) => {
-      //
-      // handle "type" message
-      //
+    this.onMessage("simple-chat", (client, message) => {
+      this.broadcast("simple-chat", {
+        sessionId: client.sessionId,
+        message: message,
+      });
     });
   }
 
