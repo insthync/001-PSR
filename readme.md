@@ -48,13 +48,13 @@ Colyseus เป็น Networking Framework สำหรับ NodeJS, ที่�
 
 # การสร้าง Schema (Generate) สำหรับ Client
 
-- ใช้ cmd หรือ terminal เปิดเข้าไปในโฟลเดอร์โดยใช้คำสั่ง `cd psr-server`
-- ใช้คำสั่ง `npx schema-codegen src/rooms/schema/MyRoomState.ts --csharp --output ..\psr-client\PSR\Assets\Scripts\Schema` เพื่อสร้าง Schema ในโฟลเดอร์ `..\psr-client\PSR\Assets\Scripts\Schema`
+- ใช้ cmd หรือ terminal เปิดเข้าไปในโฟลเดอร์โดยใช้คำสั่ง `cd colyseus-sample-server`
+- ใช้คำสั่ง `npx schema-codegen src/rooms/schema/MyRoomState.ts --csharp --output ..\colyseus-sample-client\PSR\Assets\Scripts\Schema` เพื่อสร้าง Schema ในโฟลเดอร์ `..\colyseus-sample-client\PSR\Assets\Scripts\Schema`
 - *จะสร้าง Class Schema เองก็ได้ แต่สั่งให้มัน Generate จะสะดวกกว่า*
 
 # เปิด Server
 
-- ใช้ cmd หรือ terminal เปิดเข้าไปในโฟลเดอร์โดยใช้คำสั่ง `cd psr-server`
+- ใช้ cmd หรือ terminal เปิดเข้าไปในโฟลเดอร์โดยใช้คำสั่ง `cd colyseus-sample-server`
 - ใช้คำสั่ง `npm run start` ในการเปิด Server
 
 ![](screenshots/9.png)
