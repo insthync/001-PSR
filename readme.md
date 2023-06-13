@@ -104,3 +104,30 @@ Colyseus เป็น Networking Framework สำหรับ NodeJS, ที่�
 ```
 
 - จากตัวอย่างการกำหนดการรับ Message ด้านบน, ถ้า Server ส่ง Message โดยใช้โค้ด `this.send(client, "simple-chat", "hello back");`, มันจะเขียน Log ที่ Client ว่า `Recv@Client: hello back`
+
+# การสร้าง Schema
+
+- สร้าง Class ที่ขยาย/สืบทอด มาจาก Class `Schema`
+- สร้างตัวแปรต่างๆ ที่ต้องการจะ Sync กับ Client
+- ต้องกำหนด Type ของตัวแปรแต่ละตัวด้วย Type Decorator `@type()`
+- พวก Primitive Type กำหนด Type โดยใช้ String
+- Primitive Type Example - `string`: `@type("string") stringVar : string`
+- Primitive Type Example - `boolean`: `@type("boolean") booleanVar : boolean`
+- Primitive Type Example - `int32`: `@type("int32") intVar : number`
+- Primitive Type Example - `int64`: `@type("int64") longVar : number`
+- Primitive Type Example - `float32`: `@type("float32") floatVar : number`
+- Primitive Type Example - `float64`: `@type("float64") doubleVar : number`
+- ถ้าอยากสร้าง Class ใหม่เอามาใช้ใน Schema, Class ใหม่อันนั้น ก็จะต้องขยาย/สืบทอด มาจาก Class `Schema` เหมือนกัน, การกำหนดตัวแปรต่างๆ ก็ทำเหมือนกัน, แต่การจะเอาไปใช้ในอีก Schema นึงนั้นมีวิธีกำหนด Type ต่างกันนิดหน่อย คือใช้ `@type()` เหมือนกัน แต่ไม่ได้กำหนดโดยใช้ String แล้วกำหนดโดยเอาชื่อตัวแปรนั้นมาใส่เลย เช่น:
+```
+class CustomSchema extends Schema {
+    @type("number") width: number;
+    @type("number") height: number;
+}
+
+class RoomState extends Schema {
+    @type(CustomSchema) customSchema: CustomSchema = new CustomSchema();
+}
+```
+- ถ้าจะใช้ Array ตัวแปรต้องเป็น `ArraySchema` และ ต้องกำหนด Type เป็น `[<ประเภทตัวแปร>]`, เช่น `@type([ "string" ]) stringArray = new ArraySchema<string>();`, `@type([ CustomSchema ]) customSchemas = new ArraySchema<CustomSchema>();`
+- ถ้าจะใช้ Map/Dictionary ตัวแปรต้องเป็น `MapSchema` และ ต้องกำหนด Type เป็น `{map:<ประเภทตัวแปร>}`, เช่น `@type({ map: CustomSchema }) customSchemas = new MapSchema<CustomSchema>();`, ไม่สามารถกำหนด Type ของ Key ได้ ทุก Map ใช้ Key เป็น String
+- ยังมี `SetSchema` กับ `CollectionSchema` อีกตัวด้วย แต่ใช้กับ C# ไม่ได้, ข้ามไป
