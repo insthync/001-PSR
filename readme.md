@@ -63,6 +63,38 @@ Colyseus เป็น Networking Framework สำหรับ NodeJS, ที่�
 - ใช้คำสั่ง `npx schema-codegen src/rooms/schema/MyRoomState.ts --csharp --output ..\colyseus-sample-client\ColyseusSampleClient\Assets\Scripts\Schema` เพื่อสร้าง Schema ในโฟลเดอร์ `..\colyseus-sample-client\ColyseusSampleClient\Assets\Scripts\Schema`
 - *จะสร้าง Class Schema เองก็ได้ แต่สั่งให้มัน Generate จะสะดวกกว่า*
 
+# Server: Room Lifecycle Events
+
+ใน Class Room แต่ละ Class เราสามารถกำหนดการทำงานใน Life Cycle Event ต่างๆ ได้ โดยจะมี Life Cycle Event หลักๆ ดังนี้
+
+- `onCreate (options: any)`, Event นี้จะเกิดขึ้นเมื่อมีการสร้างห้อง, ค่าใน `options` คือค่าทีได้จากคำสั่งสร้างห้องต่างๆ เช่น `JoinOrCreate`, `Create` ที่ส่งมาจาก Client
+- `onAuth (client: Client, options: any, request: http.IncomingMessage)` Event นี้จะเกิดขึ้นเมื่อ Client สั่ง Join ห้อง, Event นี้จะเกิดขึ้นก่อน `onJoin` เพื่อให้ Server สามารถเอาข้อมูลของ Client (`options` ที่ส่งมาตอนสั่งเข้าห้องเช่น `JoinOrCreate`, `Join` และ `Create`) ไปใช้ตัวตรวจสอบการเข้าใช้งาน, ถ้าไม่อนุญาต ให้ Throw Exception ไป เช่น `throw new ServerError(400, "Unauthorized")`, แต่ถ้าอนุญาต ให้ทำการคืนข้อมูลที่ต้องการส่งต่อไปให้ใน Event `onJoin`
+- `onJoin (client: Client, options: any, auth: any)` Event นี้จะเกิดขึ้นเมื่อ Server อนุญาตให้ Client สามารถ Join ห้องได้, `options` คือค่าที่ส่งมาตอนสั่งเข้าห้องเช่น `JoinOrCreate`, `Join` และ `Create`, `auth` คือที่ได้ที่จาก Event `onAuth`, สามารถสร้างข้อมูลผู้เล่นใหม่ และเก็บไปใน Room State ได้ใน Event นี้
+- `onLeave (client: Client, consented: boolean)` Event นี้จะเกิดขึ้นเมื่อ Client ออกจากห้อง, เราสามารถลบข้อมูลผู้เล่นออกจาก Room State ได้ใน Event นี้
+- `onDispose ()` Event นี้จะเกิดขึ้นเมื่อห้องถูกลบออกจากระบบ, ห้องสามารถถูกลบได้เมื่อไม่มี Client อยู่ในห้องเลย
+
+```
+import http from "http";
+import { Room, Client } from "colyseus";
+
+export class MyRoom extends Room {
+    // When room is initialized
+    onCreate (options: any) { }
+
+    // Authorize client based on provided options before WebSocket handshake is complete
+    onAuth (client: Client, options: any, request: http.IncomingMessage) { }
+
+    // When client successfully join the room
+    onJoin (client: Client, options: any, auth: any) { }
+
+    // When a client leaves the room
+    onLeave (client: Client, consented: boolean) { }
+
+    // Cleanup callback, called after there are no more clients in the room. (see `autoDispose`)
+    onDispose () { }
+}
+```
+
 # เปิด Server
 
 - ใช้ cmd หรือ terminal เปิดเข้าไปในโฟลเดอร์โดยใช้คำสั่ง `cd colyseus-sample-server`
@@ -74,6 +106,14 @@ Colyseus เป็น Networking Framework สำหรับ NodeJS, ที่�
 
 - การต่อไปที่ Server จะทำได้โดยสร้าง Instance ของ Client ก่อน, โดยใช้โค้ด `ColyseusClient Client = new ColyseusClient("ws://localhost:2567");` เพื่อสร้าง Instance ที่จะต่อไปที่ Server ที่ `localhost:2567`
 - สามารถเข้าห้องหรือสร้างห้องใหม่ ถ้าไม่มีห้องว่างเลย, โดย้ใช้โค้ด `ColyseusRoom<MyRoomState> Room = await client.JoinOrCreate<MyRoomState>("my_room")` เพื่อเข้าไปห้องชื่อ `my_room`
+- สามารถกำหนด Options ได้ด้วย เช่น 
+
+```
+var options = new Dictionary<string, string>();
+options["name"] = "DarkMasterZ";
+options["job"] = "swordman";
+ColyseusRoom<MyRoomState> Room = await client.JoinOrCreate<MyRoomState>("my_room", options);
+```
 
 ![](screenshots/sq-join-or-create.png)
 ![](screenshots/sq-join.png)
