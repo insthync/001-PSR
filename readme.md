@@ -119,6 +119,24 @@ ColyseusRoom<MyRoomState> Room = await client.JoinOrCreate<MyRoomState>("my_room
 ![](screenshots/sq-join.png)
 ![](screenshots/sq-create.png)
 
+# Client Room Events
+
+- `OnJoin` Event นี้จะเกิดขึ้นเมื่อเข้าห้องได้แล้ว
+- `OnLeave` Event นี้จะเกิดขึ้นเมื่อออกจากห้องแล้ว
+- `OnStateChange` Event นี้จะเกิดขึ้นเมื่อ Room State มีการเปลี่ยนแปลง, เราสามารถเอาค่าที่เปลี่ยนแปลงไปทำอะไรก็ได้ เช่น สั่งให้ Update เวลาของรอบการเล่น เป็นต้น
+- `OnError` Event นี้จะเกิดขึ้นเมื่อมี Error เกิดขึ้น
+- เราสามารถกำหนด Event ที่เกิดขึ้นกับพวกส่วนประกอบต่างๆ ของ Room State ได้ด้วย เช่น สมมติจะกำหนด Event เมื่อผู้เล่นเข้า/ออกห้อง
+```
+room.State.players.OnAdd((key, player) =>
+{
+    Debug.Log($"{key} has joined the Game!");
+});
+room.State.players.OnRemove((key, player) =>
+{
+    Debug.Log($"{key} has left the Game!");
+});
+```
+
 # การส่ง Message โดย Client
 
 - หลังจากเข้าห้องแล้วสามารถส่ง Message ไปหา Server โดยใช้โค้ด `Room.Send(type, data)`
