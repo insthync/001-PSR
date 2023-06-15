@@ -109,7 +109,7 @@ export class MyRoom extends Room {
 - สามารถกำหนด Options ได้ด้วย เช่น 
 
 ```
-var options = new Dictionary<string, string>();
+var options = new Dictionary<string, object>();
 options["name"] = "DarkMasterZ";
 options["job"] = "swordman";
 ColyseusRoom<MyRoomState> Room = await client.JoinOrCreate<MyRoomState>("my_room", options);
@@ -204,3 +204,32 @@ class RoomState extends Schema {
 - ถ้าจะใช้ Array ตัวแปรต้องเป็น `ArraySchema` และ ต้องกำหนด Type เป็น `[<ประเภทตัวแปร>]`, เช่น `@type([ "string" ]) stringArray = new ArraySchema<string>();`, `@type([ CustomSchema ]) customSchemas = new ArraySchema<CustomSchema>();`
 - ถ้าจะใช้ Map/Dictionary ตัวแปรต้องเป็น `MapSchema` และ ต้องกำหนด Type เป็น `{map:<ประเภทตัวแปร>}`, เช่น `@type({ map: CustomSchema }) customSchemas = new MapSchema<CustomSchema>();`, ไม่สามารถกำหนด Type ของ Key ได้ ทุก Map ใช้ Key เป็น String
 - ยังมี `SetSchema` กับ `CollectionSchema` อีกตัวด้วย แต่ใช้กับ C# ไม่ได้, ข้ามไป
+
+# การดึงรายชื่อห้อง
+
+- Client สามารถดึงรายการห้องได้โดยคำสั่ง `Client.GetAvailableRooms()`, เช่น `Client.GetAvailableRooms("my_room")`
+- สามารถกำหนด Metadata เพื่อใช้ในการบอกข้อมูลห้องได้ที่ Server โดยใช้คำสั่ง `setMetadata` เช่น
+```
+this.setMetadata({
+  title: options.title,
+  sceneName: options.sceneName,
+});
+```
+
+- เราสามารถกำหนด Field Metadata เพื่อใช้ในการอ่านข้อมูลที่ได้จากการดึงรายการห้องโดยการสร้าง Class ที่ Extends จาก `ColyseusRoomAvailable` แล้วเพิ่ม Field ชื่อ `metadata` โดยจะเป็นตัวแปรประเภทไหนก็ได้ เช่น
+
+```
+[System.Serializable]
+public class MyRoomMetadata
+{
+    public string title;
+    public string sceneName;
+}
+[System.Serializable]
+public class MyRoomAvailable : ColyseusRoomAvailable
+{
+    public MyRoomMetadata metadata;
+}
+```
+
+- สามารถดึงรายการห้องได้โดยคำสั่ง `Client.GetAvailableRooms()`, โดยกำหนดประเภทของข้อมูลได้ เช่น `Client.GetAvailableRooms<MyRoomAvailable>("my_room")`
