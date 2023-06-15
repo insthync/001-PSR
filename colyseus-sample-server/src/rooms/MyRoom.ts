@@ -15,6 +15,11 @@ export class MyRoom extends Room<MyRoomState> {
         message: message,
       });
     });
+
+    this.setMetadata({
+      title: options.title,
+      sceneName: options.sceneName,
+    });
   }
 
   onJoin (client: Client, options: any) {
