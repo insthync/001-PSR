@@ -205,7 +205,7 @@ class RoomState extends Schema {
 - ถ้าจะใช้ Map/Dictionary ตัวแปรต้องเป็น `MapSchema` และ ต้องกำหนด Type เป็น `{map:<ประเภทตัวแปร>}`, เช่น `@type({ map: CustomSchema }) customSchemas = new MapSchema<CustomSchema>();`, ไม่สามารถกำหนด Type ของ Key ได้ ทุก Map ใช้ Key เป็น String
 - ยังมี `SetSchema` กับ `CollectionSchema` อีกตัวด้วย แต่ใช้กับ C# ไม่ได้, ข้ามไป
 
-# การดึงรายชื่อห้อง
+# การดึงรายการห้อง
 
 - Client สามารถดึงรายการห้องได้โดยคำสั่ง `Client.GetAvailableRooms()`, เช่น `Client.GetAvailableRooms("my_room")`
 - สามารถกำหนด Metadata เพื่อใช้ในการบอกข้อมูลห้องได้ที่ Server โดยใช้คำสั่ง `setMetadata` เช่น
