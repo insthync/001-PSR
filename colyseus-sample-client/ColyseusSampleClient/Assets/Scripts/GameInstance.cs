@@ -10,6 +10,8 @@ public class GameInstance : MonoBehaviour
     public FlashMessage[] StackableMessages = new FlashMessage[0];
     public GameObject[] NotJoinedObjects = new GameObject[0];
     public GameObject[] JoinedObjects = new GameObject[0];
+    public string Title = "TITLE";
+    public string SceneName = "SCENE_NAME";
 
     public ColyseusClient Client { get; private set; }
     public ColyseusRoom<MyRoomState> Room { get; private set; }
@@ -87,7 +89,11 @@ public class GameInstance : MonoBehaviour
             return;
         try
         {
-            Room = await Client.JoinOrCreate<MyRoomState>("my_room");
+            Room = await Client.JoinOrCreate<MyRoomState>("my_room", new Dictionary<string, object>()
+            {
+                { "title", Title },
+                { "sceneName", SceneName }
+            });
         }
         catch (System.Exception ex)
         {
@@ -107,7 +113,11 @@ public class GameInstance : MonoBehaviour
             return;
         try
         {
-            Room = await Client.Join<MyRoomState>("my_room");
+            Room = await Client.Join<MyRoomState>("my_room", new Dictionary<string, object>()
+            {
+                { "title", Title },
+                { "sceneName", SceneName }
+            });
         }
         catch (System.Exception ex)
         {
@@ -127,7 +137,11 @@ public class GameInstance : MonoBehaviour
             return;
         try
         {
-            Room = await Client.Create<MyRoomState>("my_room");
+            Room = await Client.Create<MyRoomState>("my_room", new Dictionary<string, object>()
+            {
+                { "title", Title },
+                { "sceneName", SceneName }
+            });
         }
         catch (System.Exception ex)
         {
